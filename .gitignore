@@ -1,6 +1,6 @@
 build/
 venv/
-nohup
+nohup.out
 *.pyc
 .DS_Store
 
