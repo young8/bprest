@@ -2,6 +2,7 @@
 import os
 import json
 import time
+import tarfile
 import ConfigParser
 from json import JSONEncoder
 from flask import request, jsonify
@@ -143,3 +144,17 @@ def remove_blueprint(id):
     else:
         return jsonify({"info": "error",
                         "message": "db have not record!", "result": {}}), 400
+
+
+@api.route('/blueprintpublish', methods=['GET'])
+def publish_blueprint():
+    """
+    publish blueprint
+    as: GET /blueprintpublish
+    """
+    res = {}
+    tar = tarfile.open("hadoop.tar.gz","w:gz")
+    tar.add("hadoop/")
+    tar.close()
+
+    return jsonify(res), 200
