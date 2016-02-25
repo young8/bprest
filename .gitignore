@@ -4,11 +4,11 @@ nohup.*
 *.pyc
 *DS_Store*
 
-app/.DS_Store
+app/*DS_Store*
 app/*.pyc
 
 app/api_1_0/tmp/
 app/api_1_0/*.pyc
-app/api_1_0/.DS_Store
+app/api_1_0/*DS_Store*
 
 
