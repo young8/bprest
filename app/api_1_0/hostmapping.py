@@ -100,15 +100,17 @@ def save_hostmapping(id):
     as: GET /hostmappingsave/1
     """
     res = {}
+    path = "tmp/"
     hostmapping = db.mysql_search_one_hostmapping(id)
     if hostmapping["result"]:
         roles = hostmapping["result"]["rolename"].split(',')
         roles_tag = sum([int(x) for x in roles])
         hostmapping_filename = "hostmapping.{0}".format(str(roles_tag))
         res["hostmapping_file"] = hostmapping_filename
+        res["hostmapping_path"] = path
 
         json.dump(json.loads(hostmapping["result"]["content"]),
-                  open(hostmapping_filename, 'w'))
+                  open(path + hostmapping_filename, 'w'))
         return jsonify(res), 2004
     else:
         return jsonify({"info": "error",

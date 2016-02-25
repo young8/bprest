@@ -4,6 +4,8 @@ nohup.*
 *.pyc
 *DS_Store*
 
+tmp/*
+
 app/*DS_Store*
 app/*.pyc
 

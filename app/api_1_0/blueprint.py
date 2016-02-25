@@ -33,7 +33,7 @@ def get_one_blueprint(id):
     as: /blueprint/1
     """
     res = db.mysql_search_one_blueprint(id)
-    return jsonify(res), 2000
+    return jsonify(res), 200
 
 
 @api.route('/blueprint', methods=['POST'])
@@ -106,6 +106,7 @@ def save_blueprint(id):
     as: GET /blueprintsave/1
     """
     res = {}
+    path = "tmp/"
     blueprint = db.mysql_search_one_blueprint(id)
     if blueprint["result"]:
         components = blueprint["result"]["components"].split(',')
@@ -114,9 +115,10 @@ def save_blueprint(id):
         roles_tag = sum([int(x) for x in roles])
         blueprint_filename = "blueprint_{0}.{1}".format(components_tag, str(roles_tag))
         res["blueprint_file"] = blueprint_filename
+        res["blueprint_path"] = path
 
         json.dump(json.loads(blueprint["result"]["content"]),
-                  open(blueprint_filename, 'w'))
+                  open(path + blueprint_filename, 'w'))
         return jsonify(res), 2004
     else:
         return jsonify({"info": "error",
