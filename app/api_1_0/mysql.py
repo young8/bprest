@@ -29,6 +29,10 @@ class PyMysql:
         self.cur.close()
         self.conn.close()
 
+    """
+    about blueprint
+    """
+
     def mysql_insert_one_blueprint(self, name, components, rolename, content):
         self.__open()
         self.cur.execute("INSERT INTO blueprint (name, components, rolename, content) VALUES ('%s', '%s', '%s', '%s')" % (name, components, rolename, content))
@@ -92,6 +96,78 @@ class PyMysql:
         self.__open()
         self.cur.execute(("UPDATE blueprint SET name='%s', components='%s', rolename='%s', content='%s' WHERE id=%s") %
                          (name, components, rolename, MySQLdb.escape_string(content), id))
+        self.conn.commit()
+        self.__close()
+
+        return {"result": id}
+
+    """
+    about hostmapping
+    """
+
+    def mysql_insert_one_hostmapping(self, rolename, content):
+        self.__open()
+        self.cur.execute("INSERT INTO hostmapping (rolename, content) VALUES ('%s', '%s')" % (rolename, content))
+        rowid = self.conn.insert_id()
+        self.conn.commit()
+        self.__close()
+
+        return {"result": rowid}
+
+    def mysql_search_hostmapping(self):
+        fields = ["rolename", "components"]
+        result = []
+        sql = "SELECT " + ', '.join(fields) + " FROM hostmapping;"
+        self.__open()
+        self.cur.execute(sql)
+        rows = self.cur.fetchall()
+        if rows:
+            for line in rows:
+                t = dict(zip(tuple(fields), line))
+                result.append(t)
+        self.__close()
+
+        return {"result": result}
+
+    def mysql_search_one_hostmapping(self, id):
+        t = {}
+        fields = ["id", "rolename", "content"]
+        sql = "SELECT " + ', '.join(fields) + " FROM hostmapping WHERE id=%s;" % id
+        self.__open()
+        rows = self.cur.execute(sql)
+        if rows == 0:
+            return {"result": t}
+        row = self.cur.fetchone()
+        if row:
+            t = dict(zip(tuple(fields), row))
+        self.__close()
+
+        return {"result": t}
+
+    def mysql_check_hostmapping_byname(self, name):
+        t = 0
+        sql = "SELECT * FROM hostmapping WHERE rolename='%s';" % name
+        self.__open()
+        rows = self.cur.execute(sql)
+        if rows > 0:
+            t = 1
+        self.__close()
+
+        return {"result": t}
+
+    def mysql_delete_one_hostmapping(self, id):
+        sql = "DELETE FROM hostmapping WHERE id=%s;" % id
+        self.__open()
+        self.cur.execute(sql)
+        self.conn.commit()
+        self.__close()
+
+        return {"result": id}
+
+    def mysql_update_one_hostmapping(self, id, rolename, content):
+        self.__open()
+        self.cur.execute(("UPDATE hostmapping SET rolename='%s', content='%s' WHERE id=%s") %
+                         (rolename, MySQLdb.escape_string(content), id))
         self.conn.commit()
         self.__close()
 
