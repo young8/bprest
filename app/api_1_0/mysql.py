@@ -115,7 +115,7 @@ class PyMysql:
         return {"result": rowid}
 
     def mysql_search_hostmapping(self):
-        fields = ["rolename", "components"]
+        fields = ["id", "rolename", "content"]
         result = []
         sql = "SELECT " + ', '.join(fields) + " FROM hostmapping;"
         self.__open()
