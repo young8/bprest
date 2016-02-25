@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# import json
 import MySQLdb
 
 
@@ -43,7 +42,7 @@ class PyMysql:
         return {"result": rowid}
 
     def mysql_search_blueprint(self):
-        fields = ["id", "name", "content", "rolename", "components"]
+        fields = ["id", "name", "content", "rolename", "components", "release_file", "release_time"]
         result = []
         sql = "SELECT " + ', '.join(fields) + " FROM blueprint;"
         self.__open()
@@ -59,7 +58,7 @@ class PyMysql:
 
     def mysql_search_one_blueprint(self, id):
         t = {}
-        fields = ["id", "name", "components", "rolename", "content"]
+        fields = ["id", "name", "components", "rolename", "content", "release_file", "release_time"]
         sql = "SELECT " + ', '.join(fields) + " FROM blueprint WHERE id=%s;" % id
         self.__open()
         rows = self.cur.execute(sql)
@@ -100,6 +99,18 @@ class PyMysql:
         self.__close()
 
         return {"result": id}
+
+    def mysql_release_one_blueprint(self, id, release_file, release_time):
+        self.__open()
+        if release_time and release_file:
+            sql = ("UPDATE blueprint SET release_file='%s', release_time='%s' WHERE id=%s") % (release_file, release_time, id)
+        else:
+            sql = ("UPDATE blueprint SET release_file=Null, release_time=Null WHERE id=%s") % id
+        self.cur.execute(sql)
+        self.conn.commit()
+        self.__close()
+
+        return id
 
     """
     about hostmapping

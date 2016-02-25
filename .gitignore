@@ -3,8 +3,9 @@ venv/
 nohup.*
 *.pyc
 *DS_Store*
+*.tar.gz
 
-tmp/*
+hadoop/*
 
 app/*DS_Store*
 app/*.pyc

@@ -100,7 +100,7 @@ def save_hostmapping(id):
     as: GET /hostmappingsave/1
     """
     res = {}
-    path = "tmp/"
+    path = "hadoop/"
     hostmapping = db.mysql_search_one_hostmapping(id)
     if hostmapping["result"]:
         roles = hostmapping["result"]["rolename"].split(',')

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
+import os
 import json
+import time
 import ConfigParser
 from json import JSONEncoder
 from flask import request, jsonify
@@ -53,7 +55,7 @@ def new_blueprint():
         rowid = db.mysql_insert_one_blueprint(name, components, rolename,
                                               content)
         res = db.mysql_search_one_blueprint(rowid["result"])
-        return jsonify(res), 2001
+        return jsonify(res), 200
     else:
         return jsonify({"info": "error",
                         "message": "db have a record!", "result": {}}), 400
@@ -78,7 +80,7 @@ def update_one_blueprint(id):
         rowid = db.mysql_update_one_blueprint(id, name, components, rolename,
                                               content)
         res = db.mysql_search_one_blueprint(int(rowid["result"]))
-        return jsonify(res), 2002
+        return jsonify(res), 200
     else:
         return jsonify({"info": "error",
                         "message": "db have not record!", "result": {}}), 400
@@ -93,7 +95,7 @@ def delete_one_blueprint(id):
     row = db.mysql_search_one_blueprint(id)
     if row["result"]:
         res = db.mysql_delete_one_blueprint(id)
-        return jsonify(res), 2003
+        return jsonify(res), 200
     else:
         return jsonify({"info": "error",
                         "message": "db have not record!", "result": {}}), 400
@@ -105,8 +107,6 @@ def save_blueprint(id):
     save one blueprint to file
     as: GET /blueprintsave/1
     """
-    res = {}
-    path = "tmp/"
     blueprint = db.mysql_search_one_blueprint(id)
     if blueprint["result"]:
         components = blueprint["result"]["components"].split(',')
@@ -114,12 +114,32 @@ def save_blueprint(id):
         roles = blueprint["result"]["rolename"].split(',')
         roles_tag = sum([int(x) for x in roles])
         blueprint_filename = "blueprint_{0}.{1}".format(components_tag, str(roles_tag))
-        res["blueprint_file"] = blueprint_filename
-        res["blueprint_path"] = path
+        release_file = "hadoop/" + blueprint_filename
+        db.mysql_release_one_blueprint(id, release_file, time.strftime('%Y-%m-%d %H:%M:%S'))
+        res = db.mysql_search_one_blueprint(id)
+        json.dump(json.loads(blueprint["result"]["content"]), open(release_file, 'w'))
 
-        json.dump(json.loads(blueprint["result"]["content"]),
-                  open(path + blueprint_filename, 'w'))
-        return jsonify(res), 2004
+        return jsonify(res), 200
+    else:
+        return jsonify({"info": "error",
+                        "message": "db have not record!", "result": {}}), 400
+
+
+@api.route('/blueprintremove/<id>', methods=['GET'])
+def remove_blueprint(id):
+    """
+    remove one blueprint
+    as: GET /blueprintremove/1
+    """
+    res = {}
+    blueprint = db.mysql_search_one_blueprint(id)
+    if blueprint["result"]:
+        release_file = blueprint["result"]["release_file"]
+        db.mysql_release_one_blueprint(id, None, None)
+        res = db.mysql_search_one_blueprint(id)
+        os.remove(release_file)
+
+        return jsonify(res), 200
     else:
         return jsonify({"info": "error",
                         "message": "db have not record!", "result": {}}), 400
