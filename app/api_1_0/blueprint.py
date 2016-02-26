@@ -125,7 +125,7 @@ def save_blueprint(id):
         roles = blueprint["result"]["rolename"].split(',')
         roles_tag = sum([int(x) for x in roles])
         blueprint_filename = "blueprint_{0}.{1}".format(components_tag, str(roles_tag))
-        release_file = "hadoop/" + blueprint_filename
+        release_file = publish_source + blueprint_filename
         db.mysql_release_one_blueprint(id, release_file, time.strftime('%Y-%m-%d %H:%M:%S'))
         res = db.mysql_search_one_blueprint(id)
         json.dump(json.loads(blueprint["result"]["content"]), open(release_file, 'w'))

@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import os
+import time
 import json
 import ConfigParser
 from json import JSONEncoder
@@ -7,6 +9,9 @@ from mysql import PyMysql
 from . import api
 
 
+"""
+mysql config
+"""
 cf = ConfigParser.ConfigParser()
 cf.read("app/api_1_0/config.txt")
 host = cf.get('mysql', 'host')
@@ -15,6 +20,13 @@ user = cf.get('mysql', 'user')
 passwd = cf.get('mysql', 'passwd')
 database = cf.get('mysql', 'db')
 db = PyMysql(host=host, user=user, passwd=passwd, db=database, port=port)
+
+"""
+publish config
+"""
+publish_file = cf.get('publish', 'publish_file')
+publish_source = cf.get('publish', 'publish_source')
+publish_target = cf.get('publish', 'publish_target')
 
 
 @api.route('/hostmapping', methods=['GET'])
@@ -33,7 +45,7 @@ def get_one_hostmapping(id):
     as: /hostmapping/1
     """
     res = db.mysql_search_one_hostmapping(id)
-    return jsonify(res), 2000
+    return jsonify(res), 200
 
 
 @api.route('/hostmapping', methods=['POST'])
@@ -50,7 +62,7 @@ def new_hostmapping():
     if db.mysql_check_hostmapping_byname(rolename).get("result") == 0:
         rowid = db.mysql_insert_one_hostmapping(rolename, content)
         res = db.mysql_search_one_hostmapping(rowid["result"])
-        return jsonify(res), 2001
+        return jsonify(res), 200
     else:
         return jsonify({"info": "error",
                         "message": "db have a record!", "result": {}}), 400
@@ -72,7 +84,7 @@ def update_one_hostmapping(id):
     if row["result"]:
         rowid = db.mysql_update_one_hostmapping(id, rolename, content)
         res = db.mysql_search_one_hostmapping(int(rowid["result"]))
-        return jsonify(res), 2002
+        return jsonify(res), 200
     else:
         return jsonify({"info": "error",
                         "message": "db have not record!", "result": {}}), 400
@@ -87,7 +99,7 @@ def delete_one_hostmapping(id):
     row = db.mysql_search_one_hostmapping(id)
     if row["result"]:
         res = db.mysql_delete_one_hostmapping(id)
-        return jsonify(res), 2003
+        return jsonify(res), 200
     else:
         return jsonify({"info": "error",
                         "message": "db have not record!", "result": {}}), 400
@@ -100,18 +112,36 @@ def save_hostmapping(id):
     as: GET /hostmappingsave/1
     """
     res = {}
-    path = "hadoop/"
     hostmapping = db.mysql_search_one_hostmapping(id)
     if hostmapping["result"]:
         roles = hostmapping["result"]["rolename"].split(',')
         roles_tag = sum([int(x) for x in roles])
         hostmapping_filename = "hostmapping.{0}".format(str(roles_tag))
-        res["hostmapping_file"] = hostmapping_filename
-        res["hostmapping_path"] = path
+        release_file = publish_source + hostmapping_filename
+        db.mysql_release_one_hostmapping(id, release_file, time.strftime('%Y-%m-%d %H:%M:%S'))
+        res = db.mysql_search_one_hostmapping(id)
+        json.dump(json.loads(hostmapping["result"]["content"]), open(publish_source + hostmapping_filename, 'w'))
+        return jsonify(res), 200
+    else:
+        return jsonify({"info": "error",
+                        "message": "db have not record!", "result": {}}), 400
 
-        json.dump(json.loads(hostmapping["result"]["content"]),
-                  open(path + hostmapping_filename, 'w'))
-        return jsonify(res), 2004
+
+@api.route('/hostmappingremove/<id>', methods=['GET'])
+def remove_hostmapping(id):
+    """
+    remove one hostmapping
+    as: GET /hostmappingremove/1
+    """
+    res = {}
+    hostmapping = db.mysql_search_one_hostmapping(id)
+    if hostmapping["result"]:
+        release_file = hostmapping["result"]["release_file"]
+        db.mysql_release_one_hostmapping(id, None, None)
+        res = db.mysql_search_one_hostmapping(id)
+        os.remove(release_file)
+
+        return jsonify(res), 200
     else:
         return jsonify({"info": "error",
                         "message": "db have not record!", "result": {}}), 400
