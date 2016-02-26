@@ -1,4 +1,4 @@
-## TEST ###
+## REST API ##
 
 #### blueprint ####
 <pre><code>
@@ -16,8 +16,6 @@ curl -X GET http://127.0.0.1:7000/api/v1.0/blueprintsave/1
 
 curl -X GET http://127.0.0.1:7000/api/v1.0/blueprintremove/1
 
-curl -X GET http://127.0.0.1:7000/api/v1.0/blueprintpublish
-
 </code></pre>
 
 #### hostmapping ####
@@ -33,5 +31,13 @@ curl -H "Content-Type: application/json" -X PUT -d '{"rolename":"3,0,0","content
 curl -X DELETE http://127.0.0.1:7000/api/v1.0/hostmapping/1
 
 curl -X GET http://127.0.0.1:7000/api/v1.0/hostmappingsave/1
+
+curl -X GET http://127.0.0.1:7000/api/v1.0/hostmappingremove/1
+
+</code></pre>
+
+#### hostmapping ####
+<pre><code>
+curl -X GET http://127.0.0.1:7000/api/v1.0/blueprintpublish
 
 </code></pre>
