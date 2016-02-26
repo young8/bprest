@@ -5,3 +5,7 @@ user=root
 passwd=root
 db=bprest
 
+[publish]
+publish_file=hadoop.tar.gz
+publish_source=hadoop/
+publish_target=/opt/site-download

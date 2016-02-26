@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import shutil
 import json
 import time
 import tarfile
@@ -9,7 +10,9 @@ from flask import request, jsonify
 from mysql import PyMysql
 from . import api
 
-
+"""
+mysql config
+"""
 cf = ConfigParser.ConfigParser()
 cf.read("app/api_1_0/config.txt")
 host = cf.get('mysql', 'host')
@@ -18,6 +21,13 @@ user = cf.get('mysql', 'user')
 passwd = cf.get('mysql', 'passwd')
 database = cf.get('mysql', 'db')
 db = PyMysql(host=host, user=user, passwd=passwd, db=database, port=port)
+
+"""
+publish config
+"""
+publish_file = cf.get('publish', 'publish_file')
+publish_source = cf.get('publish', 'publish_source')
+publish_target = cf.get('publish', 'publish_target')
 
 
 @api.route('/blueprint', methods=['GET'])
@@ -153,8 +163,9 @@ def publish_blueprint():
     as: GET /blueprintpublish
     """
     res = {}
-    tar = tarfile.open("hadoop.tar.gz","w:gz")
-    tar.add("hadoop/")
+    tar = tarfile.open(publish_file, "w:gz")
+    tar.add(publish_source)
     tar.close()
+    res["result"] = shutil.move(publish_file, publish_target)
 
     return jsonify(res), 200
